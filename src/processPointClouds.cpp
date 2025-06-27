@@ -3,6 +3,7 @@
 #include "processPointClouds.h"
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include <ctime>
 #include <chrono>
 #include <iostream>
@@ -56,7 +57,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     typename pcl::PointCloud<PointT>::Ptr obstCloud {new pcl::PointCloud<PointT>};
     typename pcl::PointCloud<PointT>::Ptr planeCloud {new pcl::PointCloud<PointT>};
 
-    // for(auto index: inliers->indices){
+    // for(const auto& index: inliers->indices){
     //     planeCloud->points.push_back(cloud->points[index]);
     // }
 
@@ -99,6 +100,83 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     // Segment the largest planar component from the input cloud
     seg.setInputCloud(cloud);
     seg.segment(*inliers, *coefficients);
+
+    if (inliers->indices.size() == 0) {
+        std::cerr << "Could not estimate a planar model for the given dataset." << std::endl;
+    }
+
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult = SeparateClouds(inliers, cloud);
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+    std::cout << "plane segmentation took " << elapsedTime.count() << " milliseconds" << std::endl;
+
+    return segResult;
+}
+
+template<typename PointT>
+std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SegmentPlaneUsingRansac(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold) {
+    // Time segmentation process
+    auto startTime = std::chrono::high_resolution_clock::now();
+	pcl::PointIndices::Ptr inliers {new pcl::PointIndices};
+
+    std::unordered_set<int> inliersResult;
+	// For max iterations
+	while(maxIterations--){
+		std::unordered_set<int> localInliers;
+
+		// Randomly pick three different points
+		while (localInliers.size() < 3) {
+			localInliers.insert(rand() % cloud->points.size());
+		}
+
+		auto it = localInliers.begin();
+		PointT point1 = cloud->points[*it];
+		it++;
+		PointT point2 = cloud->points[*it];
+		it++;
+		PointT point3 = cloud->points[*it];
+
+		// Calculate distance from point to plane
+		// Plane equation: Ax + By + Cz + D = 0
+		// A = (y2 - y1)(z3 - z1) - (z2 - z1)(y3 - y1)
+		// B = (x3 - x1)(z2 - z1) - (z3 - z1)(x2 - x1)
+		// C = (x2 - x1)(y3 - y1) - (y2 - y1)(x3 - x1)
+		// D = -(Ax1 + By1 + Cz1)
+		// Distance = |Ax + By + Cz + D| / sqrt(A^2 + B^2 + C^2)
+		float A = ((point2.y - point1.y) * (point3.z - point1.z)) - ((point2.z - point1.z) * (point3.y - point1.y));
+		float B = ((point3.x - point1.x) * (point2.z - point1.z)) - ((point3.z - point1.z) * (point2.x - point1.x));
+		float C = ((point2.x - point1.x) * (point3.y - point1.y)) - ((point2.y - point1.y) * (point3.x - point1.x));
+		float D = -(A * point1.x + B * point1.y + C * point1.z);
+
+		// Measure distance between every point and fitted plane
+		// If distance is smaller than threshold count it as inlier
+		for (int index = 0; index < cloud->points.size(); index++) {
+			if (localInliers.count(index) > 0) {
+				continue; // Skip already inliers
+			}
+
+			PointT point = cloud->points[index];
+			// Distance = |Ax + By + Cz + D| / sqrt(A^2 + B^2 + C^2)
+			float distance = fabs((A * point.x) + (B * point.y) + (C * point.z) + D) / sqrt((A * A) + (B * B) + (C * C));
+
+			// If distance is smaller than threshold, count it as inlier
+			if (distance <= distanceThreshold) {
+				localInliers.insert(index);
+			}
+		}
+
+		// If number of inliers is greater than previous best, save it
+		if (localInliers.size() > inliersResult.size()) {
+			inliersResult = localInliers;
+		}
+	}
+
+    // Convert inliersResult to pcl::PointIndices
+    inliers->indices.clear();
+    for (const auto& index : inliersResult) {
+        inliers->indices.push_back(index);
+    }
 
     if (inliers->indices.size() == 0) {
         std::cerr << "Could not estimate a planar model for the given dataset." << std::endl;

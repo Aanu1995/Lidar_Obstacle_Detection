@@ -198,7 +198,7 @@ int main () {
 	// std::unordered_set<int> inliers = Ransac2D(cloud, 50, 0.5);
 
 	// Ransac function for 3D line fitting
-	std::unordered_set<int> inliers = Ransac3D(cloud, 2000, 0.5);
+	std::unordered_set<int> inliers = Ransac3D(cloud, 1000, 0.2);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());
