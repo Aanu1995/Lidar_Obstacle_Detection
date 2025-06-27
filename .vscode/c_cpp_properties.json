@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/opt/homebrew/opt/pcl/include/pcl-1.15",
+        "/opt/homebrew/include",
+        "/opt/homebrew/opt/vtk/include/vtk-9.4/**",
+        "/opt/homebrew/opt/eigen/include/eigen3"
+      ],
+      "defines": [],
+      "compilerPath": "/usr/local/bin/clang++",
+      "intelliSenseMode": "macos-clang-arm64"
+    }
+  ],
+  "version": 4
+}
