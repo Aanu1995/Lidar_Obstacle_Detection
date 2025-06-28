@@ -75,6 +75,15 @@
     "fast_back_stack": "cpp",
     "chrono": "cpp",
     "algorithm": "cpp",
-    "format": "cpp"
+    "format": "cpp",
+    "camera": "cpp",
+    "displaysettings": "cpp",
+    "glextensions": "cpp",
+    "graphicscontext": "cpp",
+    "matrixd": "cpp",
+    "matrixf": "cpp",
+    "shape": "cpp",
+    "viewport": "cpp",
+    "memory": "cpp"
   }
 }
