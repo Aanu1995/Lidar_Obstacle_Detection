@@ -48,7 +48,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer){
     // Create point processor
     ProcessPointClouds<pcl::PointXYZ> pointProcessor {};
 
-    //std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr> segmentCloud = pointProcessor->SegmentPlaneUsingRansac(cloud, 1000, 0.2);
+    //std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr> segmentCloud = pointProcessor.SegmentPlaneUsingRansac(cloud, 1000, 0.2);
     std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr> segmentCloud = pointProcessor.SegmentPlane(cloud, 1000, 0.2);
 
     //renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
@@ -106,11 +106,13 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer){
     pcl::PointCloud<pcl::PointXYZI>::Ptr filteredCloud = pointProcessor.FilterCloud(inputCloud, 0.2, Eigen::Vector4f(-10, -6, -3, 1), Eigen::Vector4f(35, 6, 2, 1));
 
     // Segment the filtered cloud into obstacles and road
-    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessor.SegmentPlane(filteredCloud, 50, 0.2);
+    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessor.SegmentPlaneUsingRansac(filteredCloud, 50, 0.2);
+    //std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessor.SegmentPlane(filteredCloud, 50, 0.2);
     renderPointCloud(viewer, segmentCloud.second, "roadCloud", Color(0, 1, 0));
 
     // Clustering the obstacles
-    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> clusters = pointProcessor.Clustering(segmentCloud.first, 0.5, 10, 500);
+    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> clusters = pointProcessor.EuclideanClustering(segmentCloud.first, 0.5, 10, 500);
+    //std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> clusters = pointProcessor.Clustering(segmentCloud.first, 0.5, 10, 500);
 
     int clusterId = 0;
     std::vector<Color> colors = {Color(1,0,0), Color(1,1,0), Color(0,0,1)};

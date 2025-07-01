@@ -97,6 +97,10 @@
     "plane": "cpp",
     "timer": "cpp",
     "transform": "cpp",
-    "userdatacontainer": "cpp"
+    "userdatacontainer": "cpp",
+    "ostream": "cpp",
+    "affinity": "cpp",
+    "nodevisitor": "cpp",
+    "shader": "cpp"
   }
 }
