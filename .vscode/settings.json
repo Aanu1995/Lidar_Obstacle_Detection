@@ -84,6 +84,19 @@
     "matrixf": "cpp",
     "shape": "cpp",
     "viewport": "cpp",
-    "memory": "cpp"
+    "memory": "cpp",
+    "__config": "cpp",
+    "functional": "cpp",
+    "tuple": "cpp",
+    "state": "cpp",
+    "*.txx": "cpp",
+    "compare": "cpp",
+    "type_traits": "cpp",
+    "boundingsphere": "cpp",
+    "object": "cpp",
+    "plane": "cpp",
+    "timer": "cpp",
+    "transform": "cpp",
+    "userdatacontainer": "cpp"
   }
 }
