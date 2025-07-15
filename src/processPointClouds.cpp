@@ -64,6 +64,7 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
 
     typename pcl::PointCloud<PointT>::Ptr cloudRoof {new pcl::PointCloud<PointT>};
 
+    // Filter out the point cloud on the roof of the car where lidar is installed
     pcl::CropBox<PointT> roof {};
     roof.setInputCloud(cloudRegion);
     roof.setMin(Eigen::Vector4f(-1.5, -1.7, -1, 1));
@@ -160,10 +161,9 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 
 
     // Early termination parameters
-    const int maxIterationsWithoutImprovement = 10;
+    constexpr int maxIterationsWithoutImprovement = 10;
     int iterationsWithoutImprovement = 0;
 
-	// For max iterations with early termination
 	while(maxIterations--){
 		localInliers.clear(); // Clear local inliers for each iteration
 

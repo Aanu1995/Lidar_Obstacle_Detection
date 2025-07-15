@@ -1,113 +1,75 @@
-# Sensor Fusion Self-Driving Car Course
+# Lidar Obstacle Detection
 
 <img src="media/ObstacleDetectionFPS.gif" width="700" height="400" />
 
-### Welcome to the Sensor Fusion course for self-driving cars.
+A comprehensive 3D object detection system using LiDAR point cloud data, implemented as part of the Udacity Sensor Fusion Nanodegree program. This project demonstrates real-time obstacle detection and tracking in autonomous driving scenarios through custom implementations of fundamental computer vision algorithms.
 
-In this course we will be talking about sensor fusion, whch is the process of taking data from multiple sensors and combining it to give us a better understanding of the world around us. we will mostly be focusing on two sensors, lidar, and radar. By the end we will be fusing the data from these two sensors to track multiple cars on the road, estimating their positions and speed.
+## Project Overview
 
-**Lidar** sensing gives us high resolution data by sending out thousands of laser signals. These lasers bounce off objects, returning to the sensor where we can then determine how far away objects are by timing how long it takes for the signal to return. Also we can tell a little bit about the object that was hit by measuring the intesity of the returned signal. Each laser ray is in the infrared spectrum, and is sent out at many different angles, usually in a 360 degree range. While lidar sensors gives us very high accurate models for the world around us in 3D, they are currently very expensive, upwards of $60,000 for a standard unit.
+This project implements a complete LiDAR-based obstacle detection pipeline that processes point cloud data to identify and track vehicles and other obstacles in a 3D environment. The system is designed to work with real-world LiDAR data and provides robust detection capabilities suitable for autonomous driving applications.
 
-**Radar** data is typically very sparse and in a limited range, however it can directly tell us how fast an object is moving in a certain direction. This ability makes radars a very pratical sensor for doing things like cruise control where its important to know how fast the car infront of you is traveling. Radar sensors are also very affordable and common now of days in newer cars.
+### Key Features
 
-**Sensor Fusion** by combing lidar's high resolution imaging with radar's ability to measure velocity of objects we can get a better understanding of the sorrounding environment than we could using one of the sensors alone.
+- **Real-time Point Cloud Processing**: Efficient filtering and preprocessing of LiDAR point cloud data
+- **Custom 3D RANSAC Implementation**: Ground plane segmentation using a from-scratch RANSAC algorithm
+- **KD-Tree Data Structure**: Custom 3D KD-Tree for efficient nearest neighbor searches
+- **Euclidean Clustering**: Custom clustering algorithm for object detection and grouping
+- **Bounding Box Generation**: Automatic generation of 3D bounding boxes around detected objects
+- **Multi-frame Object Tracking**: Consistent detection and tracking of objects across video frames
 
-**Note** The [[CMakeLists.txt]] file provided in this repo can be used locally if you have the same package versions as mentioned above. If you want to run this project locally (outside the Udacity workspace), please follow the steps under the **Local Installation** section.
+## Technical Implementation
 
-## Local Installation
+### Core Algorithms
 
-1. Edit [CMakeLists.txt] as follows:
+#### 1. 3D RANSAC Plane Segmentation
 
-```cmake
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+- **Purpose**: Separates ground plane from obstacle points
+- **Implementation**: Custom RANSAC algorithm that iteratively fits planes to point cloud data
+- **Key Features**:
+  - Handles 3D point cloud data
+  - Configurable iteration count and distance threshold
+  - Robust to outliers and noise
 
-add_definitions(-std=c++17)
+#### 2. KD-Tree for Spatial Indexing
 
-set(CXX_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
+- **Purpose**: Efficient spatial data structure for nearest neighbor searches
+- **Implementation**: Custom 3D KD-Tree with insert and search operations
+- **Key Features**:
+  - Balanced binary tree structure
+  - O(log n) search complexity
+  - Supports 3D euclidean distance queries
 
-project(playback)
+#### 3. Euclidean Clustering
 
-find_package(PCL 1.15 REQUIRED)
+- **Purpose**: Groups nearby points into distinct object clusters
+- **Implementation**: Custom clustering algorithm using KD-Tree for neighbor searches
+- **Key Features**:
+  - Configurable cluster size limits
+  - Distance-based grouping
+  - Efficient cluster formation and validation
 
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
+### Processing Pipeline
 
+1. **Point Cloud Loading**: Read LiDAR data from PCD files
+2. **Filtering**: Remove noise and limit processing region
+3. **Ground Segmentation**: Separate ground plane using RANSAC
+4. **Clustering**: Group obstacle points into distinct objects
+5. **Bounding Box Generation**: Create 3D boxes around detected objects
+6. **Visualization**: Render results with color-coded objects
 
-add_executable (environment src/environment.cpp src/render/render.cpp src/processPointClouds.cpp)
-target_link_libraries (environment ${PCL_LIBRARIES})
+## Project Structure
+
+```text
+SFND_Lidar_Obstacle_Detection/
+├── src/
+│   ├── environment.cpp          # Main application and visualization
+│   ├── processPointClouds.cpp   # Core point cloud processing algorithms
+│   ├── processPointClouds.h     # Point cloud processing header
+│   ├── kdtree.h                 # Custom KD-Tree implementation
+│   ├── render/                  # Visualization and rendering utilities
+│   ├── sensors/                 # LiDAR sensor simulation and data
+│   └── quiz/                    # Algorithm development and testing
+├── build/                       # Build directory
+├── media/                       # Demo images and videos
+└── CMakeLists.txt              # Build configuration
 ```
-
-2. Execute the following commands in a terminal
-
-   ```shell
-   sudo apt install libpcl-dev
-   cd ~/SFND_Lidar_Obstacle_Detection
-   mkdir build && cd build
-   cmake ..
-   make
-   ./environment
-   ```
-
-   This should install the latest version of PCL. You should be able to do all the classroom exercises and project with this setup.
-
-### MAC
-
-#### Install via Homebrew
-
-1. install [homebrew](https://brew.sh/)
-2. update homebrew
-   ```bash
-   $> brew update
-   ```
-3. add homebrew science [tap](https://docs.brew.sh/Taps)
-   ```bash
-   $> brew tap brewsci/science
-   ```
-4. view pcl install options
-   ```bash
-   $> brew options pcl
-   ```
-5. install PCL
-
-   ```bash
-   $> brew install pcl
-   ```
-
-6. Edit the CMakeLists.txt file as shown in Step 1 of installation instructions above.
-
-7. Execute the following commands in a terminal
-
-   ```shell
-   cd ~/SFND_Lidar_Obstacle_Detection
-   mkdir build && cd build
-   cmake ..
-   make
-   ./environment
-   ```
-
-### WINDOWS
-
-#### Install via cvpkg
-
-1. Follow the steps [here](https://pointclouds.org/downloads/) to install PCL.
-
-2. Edit the CMakeLists.txt file as shown in Step 2 of Ubuntu installation instructions above.
-
-3. Execute the following commands in Powershell or Terminal
-
-   ```shell
-   cd ~/SFND_Lidar_Obstacle_Detection
-   mkdir build && cd build
-   cmake ..
-   make
-   ./environment
-   ```
-
-#### Build from Source
-
-[PCL Source Github](https://github.com/PointCloudLibrary/pcl)
-
-[PCL Mac Compilation Docs](https://pcl.readthedocs.io/projects/tutorials/en/latest/compiling_pcl_macosx.html#compiling-pcl-macosx)
